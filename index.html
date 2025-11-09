@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serpientes y Escaleras: Salud Sexual</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fuente personalizada */
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* Estilos para el tablero del juego */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            border: 2px solid #4a5568; /* gray-700 */
+            aspect-ratio: 1 / 1; /* Mantiene el tablero cuadrado */
+        }
+
+        .board-square {
+            border: 1px solid #cbd5e0; /* gray-300 */
+            position: relative;
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            padding: 4px;
+            font-size: 0.75rem; /* text-xs */
+            font-weight: bold;
+            color: #718096; /* gray-500 */
+            background-color: white;
+            transition: background-color 0.3s;
+        }
+
+        /* Estilos para las casillas de serpientes y escaleras */
+        .snake-start {
+            background-color: #fed7d7; /* red-200 */
+        }
+        .snake-start::after {
+            content: '🐍';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem; /* Aumenta el tamaño del emoji */
+            opacity: 0.8;
+        }
+
+        .ladder-start {
+            background-color: #c6f6d5; /* green-200 */
+        }
+        .ladder-start::after {
+            content: '🪜'; /* Emoji de escalera */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            opacity: 0.8;
+        }
+        
+        /* Ocultar números en casillas especiales para que el emoji sea visible */
+        .snake-start .square-number,
+        .ladder-start .square-number {
+            opacity: 0.5;
+        }
+
+        /* Fichas de jugador */
+        .player-token {
+            position: absolute;
+            width: 2.5rem; /* w-10 */
+            height: 2.5rem; /* h-10 */
+            border-radius: 9999px; /* rounded-full */
+            transition: all 0.5s ease-in-out;
+            transform: translate(-50%, -50%); /* Centra la ficha en la casilla */
+            border: 4px solid white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        
+        /* Colores de las fichas */
+        #player1-token {
+            background-color: #e53e3e; /* red-600 */
+            left: 25%; /* Posición inicial */
+            top: 95%;
+        }
+        #player2-token {
+            background-color: #3182ce; /* blue-600 */
+            left: 75%; /* Posición inicial */
+            top: 95%;
+        }
+
+        /* Animación del dado */
+        .dice-roll {
+            animation: roll 0.5s ease-in-out;
+        }
+        @keyframes roll {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(180deg) scale(1.2); }
+            50% { transform: rotate(360deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="container mx-auto max-w-5xl w-full bg-white rounded-lg shadow-xl p-6">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">🎲 Serpientes y Escaleras: Salud Sexual 🎲</h1>
+        <p class="text-center text-gray-600 mb-6">Tema 4.4 Factores que afectan la salud sexual. Sexualidad Responsable UAEH Julio - Diciembre 2025</p>
+
+        <div class="flex flex-col md:flex-row gap-6">
+            
+            <!-- Columna de Información y Controles -->
+            <div class="w-full md:w-1/3 space-y-4">
+                
+                <!-- Info de Jugadores -->
+                <div class="bg-gray-50 rounded-lg p-4 shadow-inner">
+                    <h2 class="text-xl font-semibold mb-3 text-gray-700">Jugadores</h2>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 p-3 rounded-lg" id="player1-info-box">
+                            <span class="w-8 h-8 rounded-full bg-red-600 border-2 border-white shadow"></span>
+                            <div>
+                                <div class="font-bold text-gray-800">Jugador 1</div>
+                                <div class="text-sm text-gray-600">Posición: <span id="player1-pos" class="font-semibold">0</span></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 rounded-lg" id="player2-info-box">
+                            <span class="w-8 h-8 rounded-full bg-blue-600 border-2 border-white shadow"></span>
+                            <div>
+                                <div class="font-bold text-gray-800">Jugador 2</div>
+                                <div class="text-sm text-gray-600">Posición: <span id="player2-pos" class="font-semibold">0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controles del Juego -->
+                <div class="bg-gray-50 rounded-lg p-4 shadow-inner text-center">
+                    <div classs="mb-4">
+                        <div class="text-lg font-semibold text-gray-800" id="current-turn">Turno: Jugador 1</div>
+                    </div>
+                    
+                    <div class="my-6 flex justify-center">
+                        <div id="dice" class="w-20 h-20 bg-white rounded-lg shadow-md flex items-center justify-center text-5xl font-bold text-gray-700">
+                            ?
+                        </div>
+                    </div>
+                    
+                    <button id="roll-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:bg-indigo-700 active:bg-indigo-800 transform active:scale-95 transition-all duration-150">
+                        Tirar Dado
+                    </button>
+                    
+                    <button id="restart-btn" class="w-full bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-400 transition-all duration-150 mt-4">
+                        Reiniciar Juego
+                    </button>
+                </div>
+
+            </div>
+            
+            <!-- Columna del Tablero -->
+            <div class="w-full md:w-2/3">
+                <div class="board-container relative rounded-lg overflow-hidden shadow-lg">
+                    <!-- El tablero se genera con JS -->
+                    <div class="board" id="board"></div>
+                    
+                    <!-- Fichas de Jugador -->
+                    <div id="player1-token" class="player-token"></div>
+                    <div id="player2-token" class="player-token"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Ganador -->
+    <div id="winner-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 hidden opacity-0">
+        <div class="bg-white rounded-lg p-8 shadow-2xl text-center max-w-sm mx-auto transform scale-95 transition-all duration-300">
+            <h2 class="text-4xl mb-4">🎉</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">¡Felicidades!</h2>
+            <p id="winner-text" class="text-gray-600 text-lg mb-6"></p>
+            <button id="play-again-btn" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 transition-all duration-150">
+                Jugar de Nuevo
+            </button>
+        </div>
+    </div>
+    
+    <!-- Modal de Información (Serpientes/Escaleras) -->
+    <div id="info-modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 transition-opacity duration-300 hidden opacity-0">
+        <div class="bg-white rounded-lg p-8 shadow-2xl max-w-md mx-auto transform scale-95 transition-all duration-300">
+            <h2 id="info-title" class="text-2xl font-bold text-center mb-4"></h2>
+            <p id="info-text" class="text-gray-600 text-center text-base mb-6"></p>
+            <p id="info-move" class="text-gray-800 text-center font-semibold text-lg mb-6"></p>
+            <button id="info-close-btn" class="w-full bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-400 transition-all duration-150">
+                Cerrar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- CONSTANTES Y ESTADO DEL JUEGO ---
+            const BOARD_SIZE = 100;
+            const ROWS = 10;
+            const COLS = 10;
+            
+            // --- DEFINICIÓN DE SERPIENTES Y ESCALERAS (BASADO EN EL PDF) ---
+            // Mapeo: casilla_inicio: casilla_fin
+            const snakesAndLadders = {
+                // ESCALERAS (Factores Positivos)
+                3: 15,  // Educación Sexual Integral
+                8: 21,  // Buena Comunicación
+                12: 26, // Enfoque positivo y respetuoso (NUEVO)
+                20: 35, // Autoestima Alta
+                28: 40, // Autocuidado
+                33: 44, // Experiencias placenteras y seguras (NUEVO)
+                40: 52, // Diálogo Abierto
+                51: 63, // Acceso a Información
+                65: 76, // Imagen corporal positiva (NUEVO)
+                71: 85, // Respeto y Derechos
+                80: 92, // Equidad
+                82: 94, // Movimientos sociales (NUEVO)
+                
+                // SERPIENTES (Factores Negativos)
+                17: 9,  // Desinformación
+                23: 16, // Estigma social (NUEVO)
+                39: 29, // Control sobre sexualidad femenina (NUEVO)
+                45: 34, // Baja Autoestima
+                49: 38, // Tabúes y Vergüenza
+                56: 48, // Presión Social
+                62: 50, // Mala Comunicación
+                64: 55, // Coerción
+                70: 61, // Falta de acceso a anticonceptivos (NUEVO)
+                87: 77, // Discriminación
+                93: 83, // Estrés y Ansiedad
+                95: 86, // Mitos Culturales
+                97: 88, // Abuso en sistemas de salud (NUEVO)
+                99: 89, // Barreras Socioeconómicas
+            };
+
+            // Textos explicativos para cada casilla especial
+            const squareInfo = {
+                // ESCALERAS
+                3: { title: "¡Escalera!", text: "La Educación Sexual Integral (ESI) es un derecho. Te da información científica y laica para tomar decisiones libres, informadas y responsables sobre tu cuerpo y tu sexualidad." },
+                8: { title: "¡Escalera!", text: "La Buena Comunicación en la pareja es clave. Permite expresar deseos, límites y necesidades, fortaleciendo la confianza y la conexión emocional, que son pilares del bienestar sexual." },
+                12: { title: "¡Escalera!", text: "Un Enfoque Positivo y Respetuoso, como el que promueve la OMS, ve la sexualidad como una fuente de bienestar físico, mental y social, más allá de la ausencia de enfermedad." },
+                20: { title: "¡Escalera!", text: "Tener Autoestima Alta impacta directamente en tu vida sexual. Te permite sentirte con más confianza, tener más iniciativa y disfrutar plenamente de la intimidad sin inseguridades." },
+                28: { title: "¡Escalera!", text: "El Autocuidado (ejercicio, meditación, dieta equilibrada) reduce el estrés y mejora tu bienestar general, lo cual se refleja directamente en una vida sexual más saludable y plena." },
+                33: { title: "¡Escalera!", text: "Buscar Experiencias Placenteras y Seguras es un derecho sexual fundamental. Implica vivir la sexualidad libre de coerción, discriminación y violencia." },
+                40: { title: "¡Escalera!", text: "Un Diálogo Abierto sobre sexualidad, libre de prejuicios, te permite buscar ayuda profesional o consejo cuando lo necesitas, rompiendo barreras de silencio." },
+                51: { title: "¡Escalera!", text: "El Acceso a Información de calidad y verificada es crucial. Te permite desmentir mitos y tomar decisiones informadas sobre anticonceptivos, placer y salud." },
+                65: { title: "¡Escalera!", text: "Fomentar una Imagen Corporal Positiva te ayuda a aceptar y valorar tu cuerpo. Esto reduce la inseguridad y te permite disfrutar de la intimidad sin rechazo al propio cuerpo." },
+                71: { title: "¡Escalera!", text: "Conocer tus Derechos Sexuales y Reproductivos te empodera. Te ayuda a exigir respeto, poner límites y construir relaciones seguras e igualitarias." },
+                80: { title: "¡Escalera!", text: "La Equidad socioeconómica es un factor protector. Un mejor nivel educativo y económico permite un acceso real y efectivo a servicios de salud sexual y reproductiva de calidad." },
+                82: { title: "¡Escalera!", text: "Movimientos Sociales como la 'Marea Verde' impulsan la discusión pública sobre derechos y libertades sexuales, ayudando a generar cambios legales y culturales a favor de la autonomía." },
+                
+                // SERPIENTES
+                17: { title: "¡Serpiente!", text: "La Desinformación y la falta de educación sexual integral clara pueden llevar a prácticas de riesgo, embarazos no deseados e infecciones de transmisión sexual." },
+                23: { title: "¡Serpiente!", text: "El Estigma Social rodea temas como el placer o el acceso a anticonceptivos. Genera vergüenza y dificulta que las personas, especialmente jóvenes, busquen ayuda o información." },
+                39: { title: "¡Serpiente!", text: "El Control sobre la Sexualidad Femenina, basado en ideas como el 'culto a la virginidad', reprime el deseo de las mujeres y limita su autonomía corporal." },
+                45: { title: "¡Serpiente!", text: "La Baja Autoestima es una barrera emocional. Genera inseguridad, falta de iniciativa, incomodidad con el propio cuerpo y una menor capacidad de disfrutar la vida sexual." },
+                49: { title: "¡Serpiente!", text: "Los Tabúes y la Vergüenza que la cultura impone sobre la sexualidad impiden hablar abiertamente, resolver dudas y buscar ayuda profesional, perpetuando la desinformación." },
+                56: { title: "¡Serpiente!", text: "La Presión Social por 'cánones de belleza' inalcanzables (vistos en redes sociales) puede crear una imagen corporal negativa que sabotea la confianza en la intimidad." },
+                62: { title: "¡Serpiente!", text: "La Mala Comunicación o los conflictos no resueltos en la pareja son un factor emocional clave que impacta negativamente la intimidad, el deseo y el bienestar sexual." },
+                64: { title: "¡Serpiente!", text: "La Coerción (presionar o forzar a alguien a tener relaciones) es una forma de violencia. La sexualidad debe ser siempre libre, consensuada y segura." },
+                70: { title: "¡Serpiente!", text: "La Falta de Acceso a Métodos Anticonceptivos y a servicios de salud de calidad es una barrera socioeconómica que afecta desproporcionadamente a jóvenes y grupos vulnerables." },
+                87: { title: "¡Serpiente!", text: "La Discriminación por etnia, discapacidad u orientación sexual en los servicios de salud impide que las personas reciban la atención adecuada y respetuosa que necesitan." },
+                93: { title: "¡Serpiente!", text: "El Estrés y la Ansiedad crónicos son factores psicológicos que pueden interferir directamente con el deseo sexual y, en muchos casos, provocar disfunciones." },
+                95: { title: "¡Serpiente!", text: "Los Mitos Culturales (como el 'imperativo biológico masculino') generan culpa en las mujeres por su deseo y, peligrosamente, pueden usarse para justificar el abuso o la coerción." },
+                97: { title: "¡Serpiente!", text: "El Abuso o Maltrato en Sistemas de Salud (como el 'abuso racista' mencionado en el PDF) genera desconfianza y aleja a las poblaciones marginadas de la atención médica." },
+                99: { title: "¡Serpiente!", text: "Las Barreras Socioeconómicas (pobreza, baja escolaridad) aumentan la vulnerabilidad, limitan el acceso a información y servicios, y perpetúan ciclos de riesgo." },
+            };
+            
+            let playerPositions = { 1: 0, 2: 0 };
+            let currentPlayer = 1;
+            let gameInProgress = true;
+            let squareDimensions = { width: 0, height: 0 };
+
+            // --- REFERENCIAS AL DOM ---
+            const board = document.getElementById('board');
+            const rollBtn = document.getElementById('roll-btn');
+            const diceFace = document.getElementById('dice');
+            const player1Pos = document.getElementById('player1-pos');
+            const player2Pos = document.getElementById('player2-pos');
+            const player1InfoBox = document.getElementById('player1-info-box');
+            const player2InfoBox = document.getElementById('player2-info-box');
+            const currentTurnInfo = document.getElementById('current-turn');
+            const restartBtn = document.getElementById('restart-btn');
+            
+            // Modales
+            const winnerModal = document.getElementById('winner-modal');
+            const winnerText = document.getElementById('winner-text');
+            const playAgainBtn = document.getElementById('play-again-btn');
+            
+            const infoModal = document.getElementById('info-modal');
+            const infoTitle = document.getElementById('info-title');
+            const infoText = document.getElementById('info-text');
+            const infoMove = document.getElementById('info-move');
+            const infoCloseBtn = document.getElementById('info-close-btn');
+
+            // Fichas
+            const player1Token = document.getElementById('player1-token');
+            const player2Token = document.getElementById('player2-token');
+
+            // --- FUNCIONES DEL JUEGO ---
+
+            /**
+             * Inicializa el tablero y el estado del juego.
+             */
+            function initializeGame() {
+                playerPositions = { 1: 0, 2: 0 };
+                currentPlayer = 1;
+                gameInProgress = true;
+                
+                createBoard();
+                updatePlayerPositionsVisual();
+                updateTurnIndicator();
+                
+                diceFace.textContent = '?';
+                hideModal(winnerModal);
+                hideModal(infoModal);
+                
+                // Asegurarse de que las dimensiones de las casillas se calculen después de crear el tablero
+                if (board.firstChild) {
+                    squareDimensions.width = board.firstChild.offsetWidth;
+                    squareDimensions.height = board.firstChild.offsetHeight;
+                }
+            }
+
+            /**
+             * Crea las 100 casillas del tablero en el DOM.
+             */
+            function createBoard() {
+                board.innerHTML = ''; // Limpia el tablero
+                let numbers = [];
+                for (let i = 1; i <= BOARD_SIZE; i++) {
+                    numbers.push(i);
+                }
+
+                // Organiza los números en el orden de serpientes y escaleras
+                let boardNumbers = [];
+                for (let row = 0; row < ROWS; row++) {
+                    let rowNumbers = numbers.slice(row * COLS, (row + 1) * COLS);
+                    if (row % 2 !== 0) {
+                        rowNumbers.reverse(); // Invierte filas impares
+                    }
+                    boardNumbers = boardNumbers.concat(rowNumbers);
+                }
+                boardNumbers.reverse(); // Invierte todo el tablero para que el 1 quede abajo
+                
+                // Crea los elementos div
+                for (const num of boardNumbers) {
+                    const square = document.createElement('div');
+                    square.classList.add('board-square');
+                    square.dataset.squareNumber = num;
+                    
+                    const numberSpan = document.createElement('span');
+                    numberSpan.classList.add('square-number');
+                    numberSpan.textContent = num;
+                    square.appendChild(numberSpan);
+
+                    if (snakesAndLadders[num]) {
+                        const isLadder = snakesAndLadders[num] > num;
+                        square.classList.add(isLadder ? 'ladder-start' : 'snake-start');
+                        square.dataset.goto = snakesAndLadders[num];
+                    }
+                    
+                    board.appendChild(square);
+                }
+            }
+
+            /**
+             * Lanza el dado y mueve al jugador.
+             */
+            function rollDice() {
+                if (!gameInProgress) return;
+                
+                gameInProgress = false; // Bloquea el botón mientras se mueve
+                
+                const roll = Math.floor(Math.random() * 6) + 1;
+                
+                // Anima el dado
+                diceFace.textContent = roll;
+                diceFace.classList.add('dice-roll');
+                setTimeout(() => diceFace.classList.remove('dice-roll'), 500);
+
+                setTimeout(() => {
+                    movePlayer(roll);
+                }, 500); // Espera a que termine la animación del dado
+            }
+
+            /**
+             * Mueve al jugador la cantidad de casillas indicadas.
+             */
+            function movePlayer(roll) {
+                let currentPos = playerPositions[currentPlayer];
+                let newPos = currentPos + roll;
+
+                // --- Comprobar si ganó ---
+                if (newPos >= BOARD_SIZE) {
+                    playerPositions[currentPlayer] = BOARD_SIZE;
+                    updatePlayerPositionsVisual();
+                    endGame(currentPlayer);
+                    return;
+                }
+
+                playerPositions[currentPlayer] = newPos;
+                updatePlayerPositionsVisual();
+
+                // --- Comprobar Serpientes o Escaleras ---
+                setTimeout(() => {
+                    checkSpecialSquare(newPos);
+                }, 600); // Espera a que la ficha llegue
+            }
+
+            /**
+             * Comprueba si la casilla es una serpiente o escalera y actúa.
+             */
+            function checkSpecialSquare(pos) {
+                const destination = snakesAndLadders[pos];
+                
+                if (destination) {
+                    const info = squareInfo[pos];
+                    const isLadder = destination > pos;
+                    
+                    showInfoModal(
+                        info.title,
+                        info.text,
+                        `${isLadder ? 'Avanzas' : 'Retrocedes'} a la casilla ${destination}`
+                    );
+                    
+                    playerPositions[currentPlayer] = destination;
+                    
+                    // Espera a que el usuario cierre el modal para mover la ficha y cambiar de turno
+                    infoCloseBtn.onclick = () => {
+                        hideModal(infoModal);
+                        updatePlayerPositionsVisual();
+                        switchPlayer();
+                        gameInProgress = true; // Desbloquea el botón
+                    };
+
+                } else {
+                    // Si no es especial, solo cambia de turno
+                    switchPlayer();
+                    gameInProgress = true; // Desbloquea el botón
+                }
+            }
+
+            /**
+             * Cambia al siguiente jugador.
+             */
+            function switchPlayer() {
+                currentPlayer = currentPlayer === 1 ? 2 : 1;
+                updateTurnIndicator();
+            }
+
+            /**
+             * Actualiza el indicador visual de turno.
+             */
+            function updateTurnIndicator() {
+                currentTurnInfo.textContent = `Turno: Jugador ${currentPlayer}`;
+                if (currentPlayer === 1) {
+                    player1InfoBox.classList.add('bg-indigo-100');
+                    player2InfoBox.classList.remove('bg-indigo-100');
+                } else {
+                    player2InfoBox.classList.add('bg-indigo-100');
+                    player1InfoBox.classList.remove('bg-indigo-100');
+                }
+            }
+
+            /**
+             * Actualiza la posición visual de las fichas y el texto.
+             */
+            function updatePlayerPositionsVisual() {
+                // Actualiza texto
+                player1Pos.textContent = playerPositions[1];
+                player2Pos.textContent = playerPositions[2];
+
+                // Actualiza fichas
+                const pos1 = getCoordsForPosition(playerPositions[1]);
+                player1Token.style.left = pos1.x;
+                player1Token.style.top = pos1.y;
+
+                const pos2 = getCoordsForPosition(playerPositions[2]);
+                player2Token.style.left = pos2.x;
+                player2Token.style.top = pos2.y;
+            }
+
+            /**
+             * Calcula las coordenadas (x, y) en píxeles para una casilla.
+             */
+            function getCoordsForPosition(pos) {
+                if (pos === 0) {
+                    // Posición inicial fuera del tablero
+                    return { x: '25%', y: `calc(100% + 20px)` }; 
+                }
+
+                const square = board.querySelector(`[data-square-number="${pos}"]`);
+                if (!square) return { x: '50%', y: '50%' }; // Fallback
+
+                const squareRect = square.getBoundingClientRect();
+                const boardRect = board.getBoundingClientRect();
+
+                // Calcula el centro de la casilla relativo al tablero
+                const x = (squareRect.left - boardRect.left) + (squareRect.width / 2);
+                const y = (squareRect.top - boardRect.top) + (squareRect.height / 2);
+
+                return { x: `${x}px`, y: `${y}px` };
+            }
+
+            /**
+             * Muestra el modal de información.
+             */
+            function showInfoModal(title, text, moveText) {
+                infoTitle.textContent = title;
+                infoText.textContent = text;
+                infoMove.textContent = moveText;
+                
+                infoModal.classList.remove('hidden');
+                setTimeout(() => infoModal.classList.remove('opacity-0'), 10);
+                setTimeout(() => infoModal.querySelector('.transform').classList.remove('scale-95'), 10);
+            }
+
+            /**
+             * Oculta un modal (genérico).
+             */
+            function hideModal(modal) {
+                modal.classList.add('opacity-0');
+                modal.querySelector('.transform').classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+
+            /**
+             * Termina el juego y muestra al ganador.
+             */
+            function endGame(winner) {
+                gameInProgress = false;
+                winnerText.textContent = `¡El Jugador ${winner} ha ganado!`;
+                
+                winnerModal.classList.remove('hidden');
+                setTimeout(() => winnerModal.classList.remove('opacity-0'), 10);
+                setTimeout(() => winnerModal.querySelector('.transform').classList.remove('scale-95'), 10);
+            }
+
+
+            // --- EVENT LISTENERS ---
+            rollBtn.addEventListener('click', rollDice);
+            restartBtn.addEventListener('click', initializeGame);
+            playAgainBtn.addEventListener('click', initializeGame);
+            // El listener de infoCloseBtn se asigna dinámicamente en checkSpecialSquare
+
+            // --- INICIAR JUEGO ---
+            initializeGame();
+            
+            // Recalcular dimensiones si la ventana cambia de tamaño
+            window.addEventListener('resize', () => {
+                if (board.firstChild) {
+                    squareDimensions.width = board.firstChild.offsetWidth;
+                    squareDimensions.height = board.firstChild.offsetHeight;
+                    updatePlayerPositionsVisual(); // Reajusta las fichas
+                }
+            });
+        });
+    </script>
+</body>
+</html>
