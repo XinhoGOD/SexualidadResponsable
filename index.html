@@ -35,7 +35,7 @@
             transition: background-color 0.3s;
         }
 
-        /* Estilos para las casillas de serpientes y escaleras */
+        /* --- ESTILOS DE SERPIENTES (NEGATIVOS) --- */
         .snake-start {
             background-color: #fed7d7; /* red-200 */
         }
@@ -47,6 +47,40 @@
             transform: translate(-50%, -50%);
             font-size: 1.5rem; /* Aumenta el tamaño del emoji */
             opacity: 0.8;
+        }
+
+        /* --- ESTILOS DE ESCALERAS (POSITIVOS) --- */
+        .ladder-start {
+            background-color: #c3e6cb; /* un tono de verde claro */
+        }
+        .ladder-start::after {
+            content: '🪜'; /* O '⬆️' si prefieres */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            opacity: 0.8;
+        }
+        
+        /* Estilos para las fichas de jugador */
+        .player-token {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            transition: top 0.6s ease-in-out, left 0.6s ease-in-out;
+            z-index: 10;
+        }
+        #player1-token {
+            background-color: #dc2626; /* red-600 */
+            transform: translate(-50%, -50%) translate(-6px, 6px); /* Pequeño desplazamiento para evitar superposición */
+        }
+        #player2-token {
+            background-color: #2563eb; /* blue-600 */
+            transform: translate(-50%, -50%) translate(6px, -6px); /* Pequeño desplazamiento para evitar superposición */
         }
     </style>
 </head>
@@ -134,7 +168,7 @@
             <p class="font-semibold">Equipo 4: Feria de sexualidad responsable</p>
             <p>Alumnos: Leal Saavedra Hector Emmanuel, Jair Enrique Espada Fernandez</p>
             <p>Universidad Autónoma del Estado de Hidalgo | Enero - Junio 2025</p>
-            <p>Catedrática: Dra. TANIA BERENICE RAMIREZ GONZALEZ</p>
+            <p>Catedrática: Dra. TANIA BERENICE RAMÍREZ GONZÁLEZ</p>
         </div>
     </footer>
 
@@ -327,6 +361,7 @@
 
                     if (snakesAndLadders[num]) {
                         const isLadder = snakesAndLadders[num] > num;
+                        // AQUI SE ASIGNA LA CLASE 'ladder-start' O 'snake-start'
                         square.classList.add(isLadder ? 'ladder-start' : 'snake-start');
                         square.dataset.goto = snakesAndLadders[num];
                     }
