@@ -48,120 +48,23 @@
             font-size: 1.5rem; /* Aumenta el tamaño del emoji */
             opacity: 0.8;
         }
-
-        .ladder-start {
-            background-color: #c6f6d5; /* green-200 */
-        }
-        .ladder-start::after {
-            content: '🪜'; /* Emoji de escalera */
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 1.5rem;
-            opacity: 0.8;
-        }
-        
-        /* Ocultar números en casillas especiales para que el emoji sea visible */
-        .snake-start .square-number,
-        .ladder-start .square-number {
-            opacity: 0.5;
-        }
-
-        /* Fichas de jugador */
-        .player-token {
-            position: absolute;
-            width: 2.5rem; /* w-10 */
-            height: 2.5rem; /* h-10 */
-            border-radius: 9999px; /* rounded-full */
-            transition: all 0.5s ease-in-out;
-            transform: translate(-50%, -50%); /* Centra la ficha en la casilla */
-            border: 4px solid white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-        }
-        
-        /* Colores de las fichas */
-        #player1-token {
-            background-color: #e53e3e; /* red-600 */
-            left: 25%; /* Posición inicial */
-            top: 95%;
-        }
-        #player2-token {
-            background-color: #3182ce; /* blue-600 */
-            left: 75%; /* Posición inicial */
-            top: 95%;
-        }
-
-        /* Animación del dado */
-        .dice-roll {
-            animation: roll 0.5s ease-in-out;
-        }
-        @keyframes roll {
-            0% { transform: rotate(0deg) scale(1); }
-            25% { transform: rotate(180deg) scale(1.2); }
-            50% { transform: rotate(360deg) scale(1.2); }
-            100% { transform: rotate(360deg) scale(1); }
-        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-100 min-h-screen flex flex-col p-4">
 
-    <div class="container mx-auto max-w-5xl w-full bg-white rounded-lg shadow-xl p-6">
+    <!-- Títulos -->
+    <header class="w-full max-w-3xl mx-auto text-center mb-6">
         <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">🎲 Serpientes y Escaleras: Salud Sexual 🎲</h1>
-        <p class="text-center text-gray-600 mb-6">Tema 4.4 Factores que afectan la salud sexual. Sexualidad Responsable UAEH Julio - Diciembre 2025</p>
+        <p class="text-center text-gray-600">Un juego basado en los factores del PDF "Salud Sexual Holística".</p>
+    </header>
 
-        <div class="flex flex-col md:flex-row gap-6">
-            
-            <!-- Columna de Información y Controles -->
-            <div class="w-full md:w-1/3 space-y-4">
-                
-                <!-- Info de Jugadores -->
-                <div class="bg-gray-50 rounded-lg p-4 shadow-inner">
-                    <h2 class="text-xl font-semibold mb-3 text-gray-700">Jugadores</h2>
-                    <div class="space-y-3">
-                        <div class="flex items-center gap-3 p-3 rounded-lg" id="player1-info-box">
-                            <span class="w-8 h-8 rounded-full bg-red-600 border-2 border-white shadow"></span>
-                            <div>
-                                <div class="font-bold text-gray-800">Jugador 1</div>
-                                <div class="text-sm text-gray-600">Posición: <span id="player1-pos" class="font-semibold">0</span></div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 p-3 rounded-lg" id="player2-info-box">
-                            <span class="w-8 h-8 rounded-full bg-blue-600 border-2 border-white shadow"></span>
-                            <div>
-                                <div class="font-bold text-gray-800">Jugador 2</div>
-                                <div class="text-sm text-gray-600">Posición: <span id="player2-pos" class="font-semibold">0</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Controles del Juego -->
-                <div class="bg-gray-50 rounded-lg p-4 shadow-inner text-center">
-                    <div classs="mb-4">
-                        <div class="text-lg font-semibold text-gray-800" id="current-turn">Turno: Jugador 1</div>
-                    </div>
-                    
-                    <div class="my-6 flex justify-center">
-                        <div id="dice" class="w-20 h-20 bg-white rounded-lg shadow-md flex items-center justify-center text-5xl font-bold text-gray-700">
-                            ?
-                        </div>
-                    </div>
-                    
-                    <button id="roll-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:bg-indigo-700 active:bg-indigo-800 transform active:scale-95 transition-all duration-150">
-                        Tirar Dado
-                    </button>
-                    
-                    <button id="restart-btn" class="w-full bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-400 transition-all duration-150 mt-4">
-                        Reiniciar Juego
-                    </button>
-                </div>
-
-            </div>
+    <!-- Contenido principal (juego) que crece -->
+    <main class="w-full max-w-3xl mx-auto flex-grow">
+        <!-- Contenedor del juego (Tablero + Controles) en una tarjeta blanca -->
+        <div class="bg-white rounded-lg shadow-xl p-6">
             
             <!-- Columna del Tablero -->
-            <div class="w-full md:w-2/3">
+            <div class="w-full max-w-2xl mx-auto mb-6"> <!-- Centrado y con ancho máximo -->
                 <div class="board-container relative rounded-lg overflow-hidden shadow-lg">
                     <!-- El tablero se genera con JS -->
                     <div class="board" id="board"></div>
@@ -171,8 +74,69 @@
                     <div id="player2-token" class="player-token"></div>
                 </div>
             </div>
+
+            <!-- Controles e Información (Ahora debajo del tablero) -->
+            <div class="flex flex-col md:flex-row gap-6">
+                
+                <!-- Info de Jugadores -->
+                <div class="w-full md:w-1/2">
+                    <div class="bg-gray-50 rounded-lg p-4 shadow-inner h-full">
+                        <h2 class="text-xl font-semibold mb-3 text-gray-700">Jugadores</h2>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3 p-3 rounded-lg" id="player1-info-box">
+                                <span class="w-8 h-8 rounded-full bg-red-600 border-2 border-white shadow"></span>
+                                <div>
+                                    <div class="font-bold text-gray-800">Jugador 1</div>
+                                    <div class="text-sm text-gray-600">Posición: <span id="player1-pos" class="font-semibold">0</span></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 rounded-lg" id="player2-info-box">
+                                <span class="w-8 h-8 rounded-full bg-blue-600 border-2 border-white shadow"></span>
+                                <div>
+                                    <div class="font-bold text-gray-800">Jugador 2</div>
+                                    <div class="text-sm text-gray-600">Posición: <span id="player2-pos" class="font-semibold">0</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controles del Juego -->
+                <div class="w-full md:w-1/2">
+                    <div class="bg-gray-50 rounded-lg p-4 shadow-inner text-center h-full">
+                        <div classs="mb-4">
+                            <div class="text-lg font-semibold text-gray-800" id="current-turn">Turno: Jugador 1</div>
+                        </div>
+                        
+                        <div class="my-6 flex justify-center">
+                            <div id="dice" class="w-20 h-20 bg-white rounded-lg shadow-md flex items-center justify-center text-5xl font-bold text-gray-700">
+                                ?
+                            </div>
+                        </div>
+                        
+                        <button id="roll-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:bg-indigo-700 active:bg-indigo-800 transform active:scale-95 transition-all duration-150">
+                            Tirar Dado
+                        </button>
+                        
+                        <button id="restart-btn" class="w-full bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-400 transition-all duration-150 mt-4">
+                            Reiniciar Juego
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
         </div>
-    </div>
+    </main>
+
+    <!-- Pie de Página con Información -->
+    <footer class="w-full max-w-3xl mx-auto text-center p-6 mt-4 flex-shrink-0">
+        <div class="text-xs text-gray-500 space-y-1">
+            <p class="font-semibold">Equipo 4: Feria de sexualidad responsable</p>
+            <p>Alumnos: Leal Saavedra Hector Emmanuel, Jair Enrique Espada Fernandez</p>
+            <p>Universidad Autónoma del Estado de Hidalgo | Enero - Junio 2025</p>
+            <p>Catedrática: Dra. TANIA BERENICE RAMIREZ GONZALEZ</p>
+        </div>
+    </footer>
 
     <!-- Modal de Ganador -->
     <div id="winner-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 transition-opacity duration-300 hidden opacity-0">
